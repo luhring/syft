@@ -64,6 +64,10 @@ var cpeFilters = []filterFn{
 				return true
 			}
 		}
+		// jenkins plugins should not match against jenkins
+		if p.Type == pkg.JenkinsPluginPkg && cpe.Product == "jenkins" {
+			return true
+		}
 		return false
 	},
 }
