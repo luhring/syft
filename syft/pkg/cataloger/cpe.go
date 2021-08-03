@@ -337,10 +337,11 @@ func shouldConsiderGroupID(groupID string) bool {
 	if groupID == "" {
 		return false
 	}
+	return true
 
-	excludedGroupIDs := append([]string{pkg.JiraPluginPomPropertiesGroupID}, pkg.JenkinsPluginPomPropertiesGroupIDs...)
-
-	return !internal.HasAnyOfPrefixes(groupID, excludedGroupIDs...)
+	//excludedGroupIDs := append([]string{pkg.JiraPluginPomPropertiesGroupID}, pkg.JenkinsPluginPomPropertiesGroupIDs...)
+	//
+	//return !internal.HasAnyOfPrefixes(groupID, excludedGroupIDs...)
 }
 
 func generateAllSubSelections(fields []string) (results []string) {
