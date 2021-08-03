@@ -3,6 +3,7 @@ package cataloger
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/anchore/syft/syft/pkg"
@@ -27,14 +28,10 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				Type:     pkg.DebPkg,
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name-part:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name-part:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:name-part:name-part:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name-part:name-part:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:python-name-part:name-part:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:python-name-part:name-part:3.2:*:*:*:*:python:*:*",
-				"cpe:2.3:a:*:name_part:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name_part:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:name_part:name_part:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name_part:name_part:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:python_name_part:name_part:3.2:*:*:*:*:*:*:*",
@@ -47,10 +44,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				"cpe:2.3:a:python-name-part:name_part:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:python_name_part:name-part:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:python_name_part:name-part:3.2:*:*:*:*:python:*:*",
-				"cpe:2.3:a:*:python-name-part:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:python-name-part:3.2:*:*:*:*:python:*:*",
-				"cpe:2.3:a:*:python_name_part:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:python_name_part:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:name-part:python-name-part:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name-part:python-name-part:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:name-part:python_name_part:3.2:*:*:*:*:*:*:*",
@@ -79,18 +72,12 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				Type:     pkg.DebPkg,
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:python-name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:python-name:name:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:python_name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:python_name:name:3.2:*:*:*:*:python:*:*",
-				"cpe:2.3:a:*:python-name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:python-name:3.2:*:*:*:*:python:*:*",
-				"cpe:2.3:a:*:python_name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:python_name:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:name:python-name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:python-name:3.2:*:*:*:*:python:*:*",
 				"cpe:2.3:a:name:python_name:3.2:*:*:*:*:*:*:*",
@@ -115,9 +102,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				Type:     pkg.DebPkg,
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:node.js:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:nodejs:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:node.js:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:nodejs:*:*",
@@ -133,9 +117,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				Type:     pkg.DebPkg,
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:ruby:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:rails:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:ruby:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:rails:*:*",
@@ -151,9 +132,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				Type:     pkg.DebPkg,
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:java:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:maven:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:java:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:maven:*:*",
@@ -175,18 +153,12 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				},
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:java:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:maven:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:java:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:maven:*:*",
 				"cpe:2.3:a:sonatype:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:sonatype:name:3.2:*:*:*:*:java:*:*",
 				"cpe:2.3:a:sonatype:name:3.2:*:*:*:*:maven:*:*",
-				"cpe:2.3:a:*:nexus:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:nexus:3.2:*:*:*:*:java:*:*",
-				"cpe:2.3:a:*:nexus:3.2:*:*:*:*:maven:*:*",
 				"cpe:2.3:a:sonatype:nexus:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:sonatype:nexus:3.2:*:*:*:*:java:*:*",
 				"cpe:2.3:a:sonatype:nexus:3.2:*:*:*:*:maven:*:*",
@@ -211,9 +183,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				Type:     pkg.JenkinsPluginPkg,
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:jenkins:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
@@ -222,11 +191,12 @@ func TestGeneratePackageCPEs(t *testing.T) {
 		{
 			name: "cloudbees jenkins package identified via groupId",
 			p: pkg.Package{
-				Name:     "name",
-				Version:  "3.2",
-				FoundBy:  "some-analyzer",
-				Language: pkg.Java,
-				Type:     pkg.JenkinsPluginPkg,
+				Name:         "name",
+				Version:      "3.2",
+				FoundBy:      "some-analyzer",
+				Language:     pkg.Java,
+				Type:         pkg.JenkinsPluginPkg,
+				MetadataType: pkg.JavaMetadataType,
 				Metadata: pkg.JavaMetadata{
 					PomProperties: &pkg.PomProperties{
 						GroupID: "com.cloudbees.jenkins.plugins",
@@ -234,9 +204,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				},
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:jenkins:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
@@ -245,11 +212,12 @@ func TestGeneratePackageCPEs(t *testing.T) {
 		{
 			name: "jenkins.io package identified via groupId prefix",
 			p: pkg.Package{
-				Name:     "name",
-				Version:  "3.2",
-				FoundBy:  "some-analyzer",
-				Language: pkg.Java,
-				Type:     pkg.JenkinsPluginPkg,
+				Name:         "name",
+				Version:      "3.2",
+				FoundBy:      "some-analyzer",
+				Language:     pkg.Java,
+				Type:         pkg.JenkinsPluginPkg,
+				MetadataType: pkg.JavaMetadataType,
 				Metadata: pkg.JavaMetadata{
 					PomProperties: &pkg.PomProperties{
 						GroupID: "io.jenkins.plugins.name.something",
@@ -257,9 +225,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				},
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:jenkins:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
@@ -280,9 +245,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				},
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:jenkins:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
@@ -303,9 +265,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				},
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:jenkins:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
@@ -326,9 +285,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				},
 			},
 			expected: []string{
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:jenkins:*:*",
-				"cpe:2.3:a:*:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:jenkins:*:*",
 				"cpe:2.3:a:name:name:3.2:*:*:*:*:cloudbees_jenkins:*:*",
@@ -351,9 +307,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				},
 			},
 			expected: []string{
-				"cpe:2.3:a:*:jira_client_core:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:jira_client_core:3.2:*:*:*:*:java:*:*",
-				"cpe:2.3:a:*:jira_client_core:3.2:*:*:*:*:maven:*:*",
 				"cpe:2.3:a:atlassian:jira_client_core:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:atlassian:jira_client_core:3.2:*:*:*:*:java:*:*",
 				"cpe:2.3:a:atlassian:jira_client_core:3.2:*:*:*:*:maven:*:*",
@@ -385,12 +338,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				},
 			},
 			expected: []string{
-				"cpe:2.3:a:*:cloudbees-installation-manager:2.89.0.33:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:cloudbees-installation-manager:2.89.0.33:*:*:*:*:java:*:*",
-				"cpe:2.3:a:*:cloudbees-installation-manager:2.89.0.33:*:*:*:*:maven:*:*",
-				"cpe:2.3:a:*:cloudbees_installation_manager:2.89.0.33:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:cloudbees_installation_manager:2.89.0.33:*:*:*:*:java:*:*",
-				"cpe:2.3:a:*:cloudbees_installation_manager:2.89.0.33:*:*:*:*:maven:*:*",
 				"cpe:2.3:a:cloudbees-installation-manager:cloudbees-installation-manager:2.89.0.33:*:*:*:*:*:*:*",
 				"cpe:2.3:a:cloudbees-installation-manager:cloudbees-installation-manager:2.89.0.33:*:*:*:*:java:*:*",
 				"cpe:2.3:a:cloudbees-installation-manager:cloudbees-installation-manager:2.89.0.33:*:*:*:*:maven:*:*",
@@ -433,9 +380,6 @@ func TestGeneratePackageCPEs(t *testing.T) {
 				Type:     pkg.GoModulePkg,
 			},
 			expected: []string{
-				"cpe:2.3:a:*:something:3.2:*:*:*:*:*:*:*",
-				"cpe:2.3:a:*:something:3.2:*:*:*:*:go:*:*",
-				"cpe:2.3:a:*:something:3.2:*:*:*:*:golang:*:*",
 				"cpe:2.3:a:someone:something:3.2:*:*:*:*:*:*:*",
 				"cpe:2.3:a:someone:something:3.2:*:*:*:*:go:*:*",
 				"cpe:2.3:a:someone:something:3.2:*:*:*:*:golang:*:*",
@@ -695,6 +639,113 @@ func TestCandidateVendorForGo(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.pkg, func(t *testing.T) {
 			assert.Equal(t, test.expected, candidateVendorForGo(test.pkg))
+		})
+	}
+}
+
+func Test_generateSubSelections(t *testing.T) {
+	tests := []struct {
+		field    string
+		expected []string
+	}{
+		{
+			field:    "jenkins",
+			expected: []string{"jenkins"},
+		},
+		{
+			field:    "jenkins-ci",
+			expected: []string{"jenkins", "jenkins-ci"},
+		},
+		{
+			field:    "jenkins--ci",
+			expected: []string{"jenkins", "jenkins-ci"},
+		},
+		{
+			field:    "jenkins_ci_tools",
+			expected: []string{"jenkins", "jenkins_ci", "jenkins_ci_tools"},
+		},
+		{
+			field:    "-jenkins",
+			expected: []string{"jenkins"},
+		},
+		{
+			field:    "jenkins_",
+			expected: []string{"jenkins"},
+		},
+		{
+			field:    "",
+			expected: nil,
+		},
+		{
+			field:    "-",
+			expected: nil,
+		},
+		{
+			field:    "_",
+			expected: nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.field, func(t *testing.T) {
+			assert.ElementsMatch(t, test.expected, generateSubSelections(test.field))
+		})
+	}
+}
+
+func Test_removeDuplicateValues(t *testing.T) {
+	tests := []struct {
+		input    []string
+		expected []string
+	}{
+		{
+			input:    []string{"jenkins"},
+			expected: []string{"jenkins"},
+		},
+		{
+			input:    []string{"jenkins", "jenkins"},
+			expected: []string{"jenkins"},
+		},
+		{
+			input:    []string{"jenkins", "circleci", "circleci", "travis", "gha"},
+			expected: []string{"jenkins", "circleci", "travis", "gha"},
+		},
+		{
+			input:    nil,
+			expected: nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(strings.Join(test.input, ","), func(t *testing.T) {
+			assert.Equal(t, test.expected, removeDuplicateValues(test.input))
+		})
+	}
+}
+
+func Test_normalizeAllSeparators(t *testing.T) {
+	tests := []struct {
+		input    []string
+		expected []string
+	}{
+		{
+			input:    []string{"jenkins-ci"},
+			expected: []string{"jenkins-ci", "jenkins_ci", "jenkinsci"},
+		},
+		{
+			input:    []string{"jenkins_ci"},
+			expected: []string{"jenkins_ci", "jenkins-ci", "jenkinsci"},
+		},
+		{
+			input:    []string{"jenkins"},
+			expected: []string{"jenkins"},
+		},
+		{
+			input:    []string{"jenkins-ci", "circle-ci"},
+			expected: []string{"jenkins-ci", "jenkins_ci", "jenkinsci", "circle-ci", "circle_ci", "circleci"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(strings.Join(test.input, ","), func(t *testing.T) {
+			assert.ElementsMatch(t, test.expected, normalizeAllSeparators(test.input))
 		})
 	}
 }

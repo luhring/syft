@@ -1,6 +1,8 @@
 package cataloger
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"net/url"
 	"sort"
@@ -87,7 +89,7 @@ func newCPE(product, vendor, version, targetSW string) wfn.Attributes {
 	return cpe
 }
 
-func filterCpes(cpes []pkg.CPE, p pkg.Package, filters ...filterFn) (result []pkg.CPE) {
+func filterCPEs(cpes []pkg.CPE, p pkg.Package, filters ...filterFn) (result []pkg.CPE) {
 cpeLoop:
 	for _, cpe := range cpes {
 		for _, fn := range filters {
@@ -131,7 +133,7 @@ func generatePackageCPEs(p pkg.Package) []pkg.CPE {
 	}
 
 	// filter out any known combinations that don't accurately represent this package
-	cpes = filterCpes(cpes, p, cpeFilters...)
+	cpes = filterCPEs(cpes, p, cpeFilters...)
 
 	sort.Sort(ByCPESpecificity(cpes))
 
@@ -184,20 +186,26 @@ func candidateVendors(p pkg.Package) []string {
 		}
 	}
 
-	return vendors
+	// try swapping hyphens for underscores, vice versa, and removing separators altogether
+	vendors = normalizeAllSeparators(vendors)
+
+	// generate sub-selections of each candidate based on separators (e.g. jenkins-ci -> [jenkins, jenkins-ci])
+	vendors = generateAllSubSelections(vendors)
+
+	return removeDuplicateValues(vendors)
 }
 
 func candidateProducts(p pkg.Package) []string {
 	products := []string{p.Name}
 
-	switch p.Language {
-	case pkg.Python:
+	switch {
+	case p.Language == pkg.Python:
 		if !strings.HasPrefix(p.Name, "python") {
 			products = append(products, "python-"+p.Name)
 		}
-	case pkg.Java:
+	case p.MetadataType == pkg.JavaMetadataType:
 		products = append(products, candidateProductsForJava(p)...)
-	case pkg.Go:
+	case p.Language == pkg.Go:
 		// replace all candidates with only the golang-specific helper
 		products = nil
 		prod := candidateProductForGo(p.Name)
@@ -206,14 +214,13 @@ func candidateProducts(p pkg.Package) []string {
 		}
 	}
 
-	for _, prod := range products {
-		if strings.Contains(prod, "-") {
-			products = append(products, strings.ReplaceAll(prod, "-", "_"))
-		}
-	}
+	// try swapping hyphens for underscores, vice versa, and removing separators altogether
+	products = normalizeAllSeparators(products)
 
-	// return any known product name swaps prepended to the results
-	return append(productCandidatesByPkgType.getCandidates(p.Type, p.Name), products...)
+	// prepend any known product name swaps prepended to the results
+	products = append(productCandidatesByPkgType.getCandidates(p.Type, p.Name), products...)
+
+	return removeDuplicateValues(products)
 }
 
 // candidateProductForGo attempts to find a single product name in a best-effort attempt. This implementation prefers
@@ -334,4 +341,98 @@ func shouldConsiderGroupID(groupID string) bool {
 	excludedGroupIDs := append([]string{pkg.JiraPluginPomPropertiesGroupID}, pkg.JenkinsPluginPomPropertiesGroupIDs...)
 
 	return !internal.HasAnyOfPrefixes(groupID, excludedGroupIDs...)
+}
+
+func generateAllSubSelections(fields []string) (results []string) {
+	for _, field := range fields {
+		results = append(results, generateSubSelections(field)...)
+	}
+	return results
+}
+
+// generateSubSelections attempts to split a field by hyphens and underscores and return a list of sensible sub-selections
+// that can be used as product or vendor candidates.
+func generateSubSelections(field string) (results []string) {
+	scanner := bufio.NewScanner(strings.NewReader(field))
+	scanner.Split(scanHyphenOrUnderscore)
+	var lastToken uint8
+	for scanner.Scan() {
+		rawCandidate := scanner.Text()
+		if len(rawCandidate) == 0 {
+			break
+		}
+
+		candidate := strings.TrimFunc(rawCandidate, trimHyphenOrUnderscore)
+
+		// capture the result (if there is content)
+		if len(candidate) > 0 {
+			if len(results) > 0 {
+				results = append(results, results[len(results)-1]+string(lastToken)+candidate)
+			} else {
+				results = append(results, candidate)
+			}
+		}
+
+		// keep track of the trailing separator for the next loop
+		lastToken = rawCandidate[len(rawCandidate)-1]
+	}
+	return results
+}
+
+func trimHyphenOrUnderscore(r rune) bool {
+	switch r {
+	case '-', '_':
+		return true
+	}
+	return false
+}
+
+// scanHyphenOrUnderscore splits on hyphen or underscore and includes the separator in the split
+func scanHyphenOrUnderscore(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := bytes.IndexAny(data, "-_"); i >= 0 {
+		return i + 1, data[0 : i+1], nil
+	}
+
+	if atEOF {
+		return len(data), data, nil
+	}
+
+	return 0, nil, nil
+}
+
+func normalizeAllSeparators(fields []string) []string {
+	var results = make([]string, 0, len(fields))
+	for _, field := range fields {
+		// always include the original value
+		results = append(results, field)
+		hasHyphen := strings.Contains(field, "-")
+		hasUnderscore := strings.Contains(field, "_")
+
+		if hasHyphen {
+			// provide variations of hyphen candidates with an underscore and no separator
+			results = append(results, strings.ReplaceAll(field, "-", "_"))
+			results = append(results, strings.ReplaceAll(field, "-", ""))
+		}
+
+		if hasUnderscore {
+			// provide variations of underscore candidates with a hyphen and no separator
+			results = append(results, strings.ReplaceAll(field, "_", "-"))
+			results = append(results, strings.ReplaceAll(field, "_", ""))
+		}
+	}
+	return results
+}
+
+func removeDuplicateValues(values []string) (results []string) {
+	observed := make(map[string]struct{})
+	for _, entry := range values {
+		if _, value := observed[entry]; !value {
+			observed[entry] = struct{}{}
+			results = append(results, entry)
+		}
+	}
+	return results
 }
