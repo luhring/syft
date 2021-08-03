@@ -749,3 +749,55 @@ func Test_normalizeAllSeparators(t *testing.T) {
 		})
 	}
 }
+
+func Test_productsAndVendorsFromPomProperties(t *testing.T) {
+	tests := []struct {
+		groupId          string
+		artifactId       string
+		expectedProducts []string
+		expectedVendors  []string
+	}{
+		{
+			groupId:          "org.sonatype.nexus",
+			artifactId:       "nexus-extender",
+			expectedProducts: []string{"nexus", "nexus-extender"},
+			expectedVendors:  []string{"sonatype", "nexus"},
+		},
+		{
+			groupId:          "org.sonatype.nexus",
+			expectedProducts: []string{"nexus"},
+			expectedVendors:  []string{"sonatype", "nexus"},
+		},
+		{
+			groupId:          "org.sonatype.nexus",
+			artifactId:       "org.sonatype.nexus",
+			expectedProducts: []string{"nexus"},
+			expectedVendors:  []string{"sonatype", "nexus"},
+		},
+		{
+			groupId:          "org.jenkins-ci.plugins",
+			artifactId:       "ant",
+			expectedProducts: []string{"ant"},
+			expectedVendors:  []string{"jenkins-ci", "jenkins"},
+		},
+		{
+			groupId:          "org.jenkins-ci.plugins",
+			artifactId:       "antisamy-markup-formatter",
+			expectedProducts: []string{"antisamy-markup-formatter"},
+			expectedVendors:  []string{"jenkins-ci", "jenkins"},
+		},
+		{
+			groupId:          "io.jenkins.plugins",
+			artifactId:       "aws-global-configuration",
+			expectedProducts: []string{"aws-global-configuration"},
+			expectedVendors:  []string{"jenkins"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.groupId+":"+test.artifactId, func(t *testing.T) {
+			actualProducts, actualVendors := productsAndVendorsFromPomProperties(test.artifactId, test.groupId)
+			assert.ElementsMatch(t, test.expectedProducts, actualProducts)
+			assert.ElementsMatch(t, test.expectedVendors, actualVendors)
+		})
+	}
+}

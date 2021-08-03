@@ -39,6 +39,13 @@ var productCandidatesByPkgType = candidateStore{
 	},
 }
 
+var domains = []string{
+	"com",
+	"org",
+	"net",
+	"io",
+}
+
 var cpeFilters = []filterFn{
 	func(cpe pkg.CPE, p pkg.Package) bool {
 		// jira / atlassian should not apply to clients
@@ -189,6 +196,7 @@ func candidateVendors(p pkg.Package) []string {
 	// try swapping hyphens for underscores, vice versa, and removing separators altogether
 	vendors = normalizeAllSeparators(vendors)
 
+	// TODO: this is duplicated! see java section
 	// generate sub-selections of each candidate based on separators (e.g. jenkins-ci -> [jenkins, jenkins-ci])
 	vendors = generateAllSubSelections(vendors)
 
@@ -280,57 +288,94 @@ func candidateProductsForJava(p pkg.Package) []string {
 	// TODO: we could get group-id-like info from the MANIFEST.MF "Automatic-Module-Name" field
 	// for more info see pkg:maven/commons-io/commons-io@2.8.0 within cloudbees/cloudbees-core-mm:2.263.4.2
 	// at /usr/share/jenkins/jenkins.war:WEB-INF/plugins/analysis-model-api.hpi:WEB-INF/lib/commons-io-2.8.0.jar
-	if product, _ := productAndVendorFromPomPropertiesGroupID(p); product != "" {
-		// ignore group ID info from a jenkins plugin, as using this info may imply that this package
-		// CPE belongs to the cloudbees org (or similar) which is wrong.
-		if p.Type == pkg.JenkinsPluginPkg && strings.ToLower(product) == "jenkins" {
-			return nil
-		}
-		return []string{product}
-	}
+	products, _ := productsAndVendorsFromPomProperties(artifactAndGroupIDFromPomProperties(p))
 
-	return nil
+	return products
 }
 
 func candidateVendorsForJava(p pkg.Package) []string {
-	if _, vendor := productAndVendorFromPomPropertiesGroupID(p); vendor != "" {
-		return []string{vendor}
-	}
+	_, vendors := productsAndVendorsFromPomProperties(artifactAndGroupIDFromPomProperties(p))
 
-	return nil
+	return vendors
 }
 
-func productAndVendorFromPomPropertiesGroupID(p pkg.Package) (string, string) {
-	groupID := groupIDFromPomProperties(p)
+func productsAndVendorsFromPomProperties(artifactID, groupID string) (products []string, vendors []string) {
 	if !shouldConsiderGroupID(groupID) {
-		return "", ""
+		return nil, nil
 	}
 
-	if !internal.HasAnyOfPrefixes(groupID, "com", "org") {
-		return "", ""
+	if !internal.HasAnyOfPrefixes(groupID, domains...) {
+		return nil, nil
 	}
 
-	fields := strings.Split(groupID, ".")
-	if len(fields) < 3 {
-		return "", ""
+	// process the group id
+	groupIdFields := strings.Split(groupID, ".")
+	for i, field := range groupIdFields {
+		field = strings.TrimSpace(field)
+		if len(field) == 0 {
+			continue
+		}
+
+		if internal.IsAnyOf(strings.ToLower(field), "plugin", "plugins") {
+			continue
+		}
+
+		switch i {
+		case 0:
+			continue
+		case 1:
+			vendors = append(vendors, generateSubSelections(field)...)
+		default:
+			// e.g. jenkins-ci -> [jenkins-ci, jenkins]
+			vendors = append(vendors, generateSubSelections(field)...)
+			products = append(products, field)
+		}
 	}
 
-	product := fields[2]
-	vendor := fields[1]
-	return product, vendor
+	// process the artifact ID
+
+	artifactID = strings.TrimSpace(artifactID)
+	artifactIdFields := strings.Split(artifactID, ".")
+	switch len(artifactIdFields) {
+	case 0, 1:
+		if artifactID != "" {
+			products = append(products, artifactID)
+		}
+	default:
+		// this ia probably a group ID that's been thrown into the artifact ID field (incorrectly)
+		for i, field := range artifactIdFields {
+			field = strings.TrimSpace(field)
+			if len(field) == 0 {
+				continue
+			}
+
+			if internal.IsAnyOf(strings.ToLower(field), "plugin", "plugins") {
+				continue
+			}
+
+			switch i {
+			case 0, 1:
+				continue
+			default:
+				products = append(products, field)
+			}
+		}
+	}
+
+	return removeDuplicateValues(products), removeDuplicateValues(vendors)
 }
 
-func groupIDFromPomProperties(p pkg.Package) string {
+func artifactAndGroupIDFromPomProperties(p pkg.Package) (string, string) {
 	metadata, ok := p.Metadata.(pkg.JavaMetadata)
 	if !ok {
-		return ""
+		return "", ""
 	}
 
 	if metadata.PomProperties == nil {
-		return ""
+		return "", ""
 	}
 
-	return metadata.PomProperties.GroupID
+	return metadata.PomProperties.ArtifactID, metadata.PomProperties.GroupID
 }
 
 func shouldConsiderGroupID(groupID string) bool {
@@ -338,10 +383,6 @@ func shouldConsiderGroupID(groupID string) bool {
 		return false
 	}
 	return true
-
-	//excludedGroupIDs := append([]string{pkg.JiraPluginPomPropertiesGroupID}, pkg.JenkinsPluginPomPropertiesGroupIDs...)
-	//
-	//return !internal.HasAnyOfPrefixes(groupID, excludedGroupIDs...)
 }
 
 func generateAllSubSelections(fields []string) (results []string) {
