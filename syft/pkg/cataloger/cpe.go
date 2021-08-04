@@ -334,7 +334,7 @@ func productsAndVendorsFromPomProperties(artifactID, groupID string) (products [
 		default:
 			// e.g. jenkins-ci -> [jenkins-ci, jenkins]
 			vendors = append(vendors, generateSubSelections(field)...)
-			if artifactID == "" || ((strings.HasPrefix(artifactID, field) || strings.HasSuffix(artifactID, field)) && (!strings.Contains(artifactID, "plugin") || !strings.Contains(groupID, "plugin"))) {
+			if artifactID == "" || ((strings.HasPrefix(artifactID, field) || strings.HasSuffix(artifactID, field)) && (!strings.Contains(artifactID, "plugin") && !strings.Contains(groupID, "plugin"))) {
 				products = append(products, field)
 			}
 		}
