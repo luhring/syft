@@ -304,6 +304,8 @@ func candidateVendorsForJava(p pkg.Package) []string {
 }
 
 func productsAndVendorsFromPomProperties(artifactID, groupID string) (products []string, vendors []string) {
+	artifactID = strings.TrimSpace(artifactID)
+
 	if !shouldConsiderGroupID(groupID) {
 		return nil, nil
 	}
@@ -332,13 +334,13 @@ func productsAndVendorsFromPomProperties(artifactID, groupID string) (products [
 		default:
 			// e.g. jenkins-ci -> [jenkins-ci, jenkins]
 			vendors = append(vendors, generateSubSelections(field)...)
-			products = append(products, field)
+			if artifactID == "" || strings.HasPrefix(artifactID, field) || strings.HasSuffix(artifactID, field) {
+				products = append(products, field)
+			}
 		}
 	}
 
 	// process the artifact ID
-
-	artifactID = strings.TrimSpace(artifactID)
 	artifactIdFields := strings.Split(artifactID, ".")
 	switch len(artifactIdFields) {
 	case 0, 1:

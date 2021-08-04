@@ -793,11 +793,16 @@ func Test_productsAndVendorsFromPomProperties(t *testing.T) {
 			expectedVendors:  []string{"jenkins"},
 		},
 		{
-			groupId:    "com.cloudbees.jenkins.plugins",
-			artifactId: "cloudbees-servicenow-jenkins-plugin",
-			// TODO: this is not good. Jenkins should not be in this list
-			expectedProducts: []string{"cloudbees-servicenow-jenkins-plugin"}, // jenkins :(
+			groupId:          "com.cloudbees.jenkins.plugins",
+			artifactId:       "cloudbees-servicenow-jenkins-plugin",
+			expectedProducts: []string{"cloudbees-servicenow-jenkins-plugin"},
 			expectedVendors:  []string{"cloudbees", "jenkins"},
+		},
+		{
+			groupId:          "com.google.guava",
+			artifactId:       "failureaccess",
+			expectedProducts: []string{"failureaccess"},
+			expectedVendors:  []string{"google", "guava"},
 		},
 	}
 	for _, test := range tests {
