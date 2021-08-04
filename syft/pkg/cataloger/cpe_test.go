@@ -799,6 +799,12 @@ func Test_productsAndVendorsFromPomProperties(t *testing.T) {
 			expectedVendors:  []string{"cloudbees", "jenkins"},
 		},
 		{
+			groupId:          "com.atlassian.confluence.plugins",
+			artifactId:       "confluence-mobile-plugin",
+			expectedProducts: []string{"confluence-mobile-plugin"},
+			expectedVendors:  []string{"atlassian", "confluence"},
+		},
+		{
 			groupId:          "com.google.guava",
 			artifactId:       "failureaccess",
 			expectedProducts: []string{"failureaccess"},
