@@ -805,6 +805,12 @@ func Test_productsAndVendorsFromPomProperties(t *testing.T) {
 			expectedVendors:  []string{"atlassian", "confluence"},
 		},
 		{
+			groupId:          "com.atlassian.confluence.plugins",
+			artifactId:       "confluence-view-file-macro",
+			expectedProducts: []string{"confluence-view-file-macro"},
+			expectedVendors:  []string{"atlassian", "confluence"},
+		},
+		{
 			groupId:          "com.google.guava",
 			artifactId:       "failureaccess",
 			expectedProducts: []string{"failureaccess"},
@@ -814,8 +820,8 @@ func Test_productsAndVendorsFromPomProperties(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.groupId+":"+test.artifactId, func(t *testing.T) {
 			actualProducts, actualVendors := productsAndVendorsFromPomProperties(test.artifactId, test.groupId)
-			assert.ElementsMatch(t, test.expectedProducts, actualProducts)
-			assert.ElementsMatch(t, test.expectedVendors, actualVendors)
+			assert.ElementsMatch(t, test.expectedProducts, actualProducts, "different products")
+			assert.ElementsMatch(t, test.expectedVendors, actualVendors, "different vendors")
 		})
 	}
 }
