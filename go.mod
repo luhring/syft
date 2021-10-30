@@ -14,38 +14,58 @@ require (
 	github.com/anchore/stereoscope v0.0.0-20211024152658-003132a67c10
 	github.com/antihax/optional v1.0.0
 	github.com/bmatcuk/doublestar/v2 v2.0.4
-	github.com/docker/docker v17.12.0-ce-rc1.0.20200309214505-aa6a9891b09c+incompatible
+	github.com/docker/docker v20.10.7+incompatible
 	github.com/dustin/go-humanize v1.0.0
 	github.com/facebookincubator/nvdtools v0.1.4
+	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
 	github.com/go-test/deep v1.0.7
-	github.com/google/go-cmp v0.4.1
-	github.com/google/uuid v1.2.0
+	github.com/google/go-cmp v0.5.6
+	github.com/google/go-containerregistry v0.6.0 // indirect
+	github.com/google/uuid v1.3.0
 	github.com/gookit/color v1.2.7
-	github.com/hashicorp/go-multierror v1.1.0
+	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.2.0
+	github.com/klauspost/compress v1.13.5 // indirect
+	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/hashstructure v1.1.0
-	github.com/mitchellh/mapstructure v1.3.1
-	github.com/olekukonko/tablewriter v0.0.4
-	github.com/pelletier/go-toml v1.8.1
+	github.com/mitchellh/mapstructure v1.4.1
+	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
+	github.com/olekukonko/tablewriter v0.0.5
+	github.com/onsi/gomega v1.15.0 // indirect
+	github.com/pelletier/go-toml v1.9.3
 	github.com/pkg/profile v1.5.0
 	github.com/scylladb/go-set v1.0.2
-	github.com/sergi/go-diff v1.1.0
+	github.com/sergi/go-diff v1.2.0
 	github.com/sirupsen/logrus v1.8.1
+	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spdx/tools-golang v0.1.0
-	github.com/spf13/afero v1.2.2
-	github.com/spf13/cobra v1.0.1-0.20200909172742-8a63648dd905
+	github.com/spf13/afero v1.6.0
+	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.7.0
+	github.com/spf13/viper v1.8.1
+	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/vifraa/gopom v0.1.0
 	github.com/wagoodman/go-partybus v0.0.0-20210627031916-db1f5573bbc5
 	github.com/wagoodman/go-progress v0.0.0-20200731105512-1020f39e6240
 	github.com/wagoodman/jotframe v0.0.0-20200730190914-3517092dd163
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
+	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/mod v0.3.0
-	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
-	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	golang.org/x/mod v0.5.0
+	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f
+	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
+	golang.org/x/sys v0.0.0-20210903071746-97244b99971b // indirect
+	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
+	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
+	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
