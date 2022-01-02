@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"bytes"
 	"os"
 	"testing"
 
@@ -104,4 +105,16 @@ func TestParseGoMod(t *testing.T) {
 
 		})
 	}
+}
+
+func FuzzParseGoMod(f *testing.F) {
+	f.Add("a", []byte("b"))
+	f.Fuzz(func(t *testing.T, path string, b []byte) {
+		reader := bytes.NewBuffer(b)
+
+		pkgs, _, err := parseGoMod(path, reader)
+		if err != nil && pkgs != nil {
+			t.Errorf("%q, %v", pkgs, err)
+		}
+	})
 }
