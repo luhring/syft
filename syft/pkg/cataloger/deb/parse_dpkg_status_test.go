@@ -2,6 +2,7 @@ package deb
 
 import (
 	"bufio"
+	"bytes"
 	"os"
 	"testing"
 
@@ -241,4 +242,21 @@ func TestSourceVersionExtract(t *testing.T) {
 
 		})
 	}
+}
+
+func FuzzParseDpkgStatus(f *testing.F) {
+	file, err := os.ReadFile("test-fixtures/status/multiple")
+	if err != nil {
+		f.Fatal(err)
+	}
+	f.Add(file)
+
+	f.Fuzz(func(t *testing.T, b []byte) {
+		reader := bytes.NewBuffer(b)
+
+		pkgs, err := parseDpkgStatus(reader)
+		if err != nil && pkgs != nil {
+			t.Errorf("%q, %v", pkgs, err)
+		}
+	})
 }
