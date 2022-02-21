@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/anchore/stereoscope"
+	"github.com/anchore/syft/internal/ui"
+
+	"github.com/wagoodman/go-partybus"
+
 	"github.com/anchore/syft/internal"
 	"github.com/anchore/syft/internal/anchore"
 	"github.com/anchore/syft/internal/bus"
 	"github.com/anchore/syft/internal/log"
-	"github.com/anchore/syft/internal/ui"
 	"github.com/anchore/syft/internal/version"
 	"github.com/anchore/syft/syft/artifact"
 	"github.com/anchore/syft/syft/event"
@@ -19,11 +21,11 @@ import (
 	"github.com/anchore/syft/syft/pkg/cataloger"
 	"github.com/anchore/syft/syft/sbom"
 	"github.com/anchore/syft/syft/source"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/pkg/profile"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/wagoodman/go-partybus"
 )
 
 const (
@@ -202,6 +204,39 @@ func validateInputArgs(cmd *cobra.Command, args []string) error {
 }
 
 func packagesExec(_ *cobra.Command, args []string) error {
+	userInput := args[0]
+
+	analysisTasks, err := tasks()
+	if err != nil {
+		return err
+	}
+
+	p := tea.NewProgram(
+		ui.New(
+			userInput,
+			eventSubscription,
+			*appConfig,
+			mapToAnalysisTasks(analysisTasks),
+		),
+		tea.WithOutput(os.Stderr),
+	)
+	model, err := p.StartReturningModel()
+	if err != nil {
+		return err
+	}
+
+	m, ok := model.(ui.Model)
+	if !ok {
+		return fmt.Errorf("unable to type assert UI model: %#v", model)
+	}
+
+	if err := m.Result.Error; err != nil {
+		return err
+	}
+
+	// TODO:
+	//  - Separate config processing from I/O logic
+	//  - Try to avoid the abstraction consumer needing a close method
 	writer, err := makeWriter(appConfig.Output, appConfig.File)
 	if err != nil {
 		return err
@@ -213,16 +248,28 @@ func packagesExec(_ *cobra.Command, args []string) error {
 		}
 	}()
 
-	// could be an image or a directory, with or without a scheme
-	userInput := args[0]
+	err = writer.Write(m.Result.SBOM)
+	if err != nil {
+		return err
+	}
 
-	return eventLoop(
-		packagesExecWorker(userInput, writer),
-		setupSignals(),
-		eventSubscription,
-		stereoscope.Cleanup,
-		ui.Select(isVerbose(), appConfig.Quiet)...,
-	)
+	if appConfig.Anchore.Host != "" {
+		if err := runPackageSbomUpload(&m.Result.Source, m.Result.SBOM); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func mapToAnalysisTasks(tasks []task) []ui.AnalysisTask {
+	var result []ui.AnalysisTask
+
+	for _, t := range tasks {
+		result = append(result, ui.AnalysisTask(t))
+	}
+
+	return result
 }
 
 func isVerbose() (result bool) {
